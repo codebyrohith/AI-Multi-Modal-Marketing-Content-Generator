@@ -1,26 +1,55 @@
+from backend.utils.config import chat_collection, GROQ_API_KEY
 from groq import Groq
-from backend.utils.config import GROQ_API_KEY
-from backend.services.image_processing import chat_history
 
-# Initialize Groq Client
 client = Groq(api_key=GROQ_API_KEY)
 
+def get_marketing_content(base64_image, user_id):
+    """Extract product details and marketing content from an image using Groq's LLaMA-3.2 Vision model."""
+    
+    completion = client.chat.completions.create(
+        model="llama-3.2-11b-vision-preview",
+        messages=[
+            {"role": "user", "content": [
+                {"type": "text", "text": "Based on the details in the given image, generate product description and marketing content"},
+                {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{base64_image}"}}
+            ]}
+        ],
+        temperature=1,
+        max_completion_tokens=1024,
+        top_p=1,
+        stream=False,
+        stop=None,
+    )
+
+    if completion and completion.choices:
+        content = completion.choices[0].message.content
+        # Store the first response in MongoDB
+        chat_collection.update_one(
+            {"user_id": user_id},
+            {"$set": {"image_details": content}},
+            upsert=True
+        )
+        return content
+
+    return "Error: Unable to generate marketing content from the image."
+
 def generate_response(user_id, user_prompt):
-    """Generate responses based on user's prompt & previous image details."""
-    if user_id not in chat_history:
+    """Generate AI responses using stored image details and past chats."""
+    user_chat = chat_collection.find_one({"user_id": user_id})
+
+    if not user_chat or "image_details" not in user_chat:
         return "Error: No image uploaded. Please upload an image first."
 
-    # Retrieve previous context (image details)
-    previous_content = chat_history[user_id]["image_details"]
+    previous_content = user_chat["image_details"]
+    chat_history = user_chat["chat"]
 
-    # Add user prompt to chat history
-    chat_history[user_id]["chat"].append({"user": user_prompt})
-
+    # Generate AI response using previous conversation history
     completion = client.chat.completions.create(
         model="llama-3.2-11b-vision-preview",
         messages=[
             {"role": "system", "content": "You are an AI marketing assistant that generates compelling product descriptions and marketing content."},
-            {"role": "user", "content": f"Previous Image Details: {previous_content}"},
+            {"role": "user", "content": f"Image Details: {previous_content}"},
+            *chat_history,
             {"role": "user", "content": user_prompt}
         ],
         temperature=0.9,
@@ -31,7 +60,19 @@ def generate_response(user_id, user_prompt):
 
     if completion and completion.choices:
         response = completion.choices[0].message.content
-        chat_history[user_id]["chat"].append({"assistant": response})
+
+        # Save chat history in MongoDB
+        chat_collection.update_one(
+            {"user_id": user_id},
+            {"$push": {"chat": {"role": "user", "content": user_prompt}}},
+            upsert=True
+        )
+        chat_collection.update_one(
+            {"user_id": user_id},
+            {"$push": {"chat": {"role": "assistant", "content": response}}},
+            upsert=True
+        )
+
         return response
 
     return "Error: Unable to generate a response."
