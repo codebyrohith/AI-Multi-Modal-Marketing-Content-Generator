@@ -1,0 +1,83 @@
+import React, { useState } from "react";
+import { BsFillPlusCircleFill } from "react-icons/bs";
+import axios from "axios";
+import { useAppContext } from "../context/AppContext";
+
+const PictureProcessing = () => {
+  const { addNewImage } = useAppContext();
+  const [image, setImage] = useState(null);
+  const [previewURL, setPreviewURL] = useState(null);
+  const [uploading, setUploading] = useState(false);
+
+  const handleFileChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      setImage(file);
+      setPreviewURL(URL.createObjectURL(file)); //Show preview immediately
+    }
+  };
+
+  const handleUpload = async () => {
+    if (!image) {
+      alert("Please select an image first.");
+      return;
+    }
+
+    setUploading(true);
+    const formData = new FormData();
+    formData.append("image", image);
+
+    try {
+      const response = await axios.post(
+        "http://127.0.0.1:5000/api/generate_description",
+        formData,
+        { headers: { "Content-Type": "multipart/form-data" } }
+      );
+
+      console.log("Full API Response:", response.data);
+
+      if (response.data && response.data.marketing_content) {
+        addNewImage(previewURL, response.data.marketing_content); //Update Context
+      } else {
+        alert(
+          `Error: No description returned. Full response: ${JSON.stringify(
+            response.data
+          )}`
+        );
+      }
+    } catch (error) {
+      console.error("Upload failed:", error);
+      alert(`Upload failed! Error: ${error.message}`);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  return (
+    <div className="flex flex-col items-center justify-center text-xl p-4">
+      <input
+        type="file"
+        accept="image/*"
+        onChange={handleFileChange}
+        className="hidden"
+        id="fileInput"
+      />
+      <label htmlFor="fileInput" className="cursor-pointer text-4xl">
+        <BsFillPlusCircleFill />
+      </label>
+      {previewURL && (
+        <img src={previewURL} className="w-48 h-48 mt-2 rounded-lg shadow-md" />
+      )}
+      {image && (
+        <button
+          onClick={handleUpload}
+          className="mt-4 bg-blue-500 text-white px-4 py-2 rounded-lg"
+        >
+          {uploading ? "Uploading..." : "Upload"}
+        </button>
+      )}
+    </div>
+  );
+};
+
+export default PictureProcessing;
