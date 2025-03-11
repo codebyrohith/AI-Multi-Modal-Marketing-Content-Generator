@@ -1,41 +1,160 @@
-import React from "react";
+// import React from "react";
+// import { useAppContext } from "../context/AppContext";
+// import MessageInput from "./MessageInput";
+// import PictureProcessing from "./PictureProcessing";
+
+// const ChatInterface = () => {
+//   const { uploadedImages, marketingContent, chatHistory } = useAppContext();
+
+//   return (
+//     <div className="flex flex-col h-screen items-center bg-gray-100">
+//       <div className="w-full max-w-3xl flex flex-col flex-1 overflow-auto p-4 bg-white shadow-lg rounded-lg">
+//         <h2 className="text-2xl font-bold mb-4 text-center">
+//           Marketing Content Generator
+//         </h2>
+
+//         {/* Image Upload Section */}
+//         <PictureProcessing />
+
+//         {/* Display Uploaded Images & Generated Marketing Content */}
+//         {uploadedImages.map((img, index) => (
+//           <div
+//             key={index}
+//             className="mb-4 border border-gray-300 p-4 rounded-lg shadow-lg bg-white"
+//           >
+//             <img
+//               src={img}
+//               alt="Uploaded"
+//               className="w-48 h-48 object-cover rounded-lg shadow-md mx-auto"
+//             />
+//             <p className="mt-2 p-2 bg-gray-100 border border-gray-300 rounded">
+//               <strong>Generated Content:</strong> {marketingContent[index]}
+//             </p>
+//           </div>
+//         ))}
+
+//         {/* Chat Messages Section - Centered */}
+//         <div className="mt-4 space-y-4">
+//           {chatHistory.map((chat, index) => (
+//             <div key={index} className="flex flex-col space-y-2">
+//               {/* User Prompt - Right Aligned */}
+//               <div className="flex justify-end">
+//                 <div className="bg-blue-500 text-white p-3 rounded-lg max-w-lg shadow-md">
+//                   <strong>You:</strong> {chat.user}
+//                 </div>
+//               </div>
+
+//               {/* AI Response - Left Aligned */}
+//               <div className="flex justify-start">
+//                 <div className="bg-gray-200 text-black p-3 rounded-lg max-w-lg shadow-md">
+//                   <strong>AI:</strong> {chat.ai}
+//                 </div>
+//               </div>
+//             </div>
+//           ))}
+//         </div>
+//       </div>
+
+//       {/* Message Input for Chat */}
+//       <div className="w-full max-w-3xl">
+//         <MessageInput />
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default ChatInterface;
+
+import React, { useState } from "react";
 import { useAppContext } from "../context/AppContext";
 import MessageInput from "./MessageInput";
 import PictureProcessing from "./PictureProcessing";
+import ImageCustomization from "./ImageCustomization"; // Import the new component
 
 const ChatInterface = () => {
-  const { uploadedImages, generatedDescriptions } = useAppContext();
+  const { uploadedImages, marketingContent, chatHistory, customizedImages } =
+    useAppContext();
+  const [activeTab, setActiveTab] = useState("marketing"); // Tab Switching
 
   return (
-    <div className="flex-1 flex flex-col h-screen">
-      <div className="flex-1 overflow-auto p-4">
-        <h2 className="text-2xl font-bold mb-4">Generated Content</h2>
+    <div className="flex flex-col h-screen items-center bg-gray-100">
+      <div className="w-full max-w-3xl flex flex-col flex-1 overflow-auto p-4 bg-white shadow-lg rounded-lg">
+        {/* Tab Navigation */}
+        <div className="flex justify-center mb-4">
+          <button
+            onClick={() => setActiveTab("marketing")}
+            className={`px-4 py-2 rounded-l-lg ${
+              activeTab === "marketing"
+                ? "bg-blue-500 text-white"
+                : "bg-gray-300 text-black"
+            }`}
+          >
+            Marketing Content
+          </button>
+          <button
+            onClick={() => setActiveTab("customization")}
+            className={`px-4 py-2 rounded-r-lg ${
+              activeTab === "customization"
+                ? "bg-blue-500 text-white"
+                : "bg-gray-300 text-black"
+            }`}
+          >
+            Image Customization
+          </button>
+        </div>
 
-        {/* Include PictureProcessing at the top */}
-        <PictureProcessing />
+        {/* Render Tabs */}
+        {activeTab === "marketing" ? (
+          <>
+            <h2 className="text-2xl font-bold mb-4 text-center">
+              Marketing Content Generator
+            </h2>
+            <PictureProcessing />
 
-        {/* Display Uploaded Images & Generated Descriptions */}
-        {uploadedImages.length > 0 ? (
-          uploadedImages.map((img, index) => (
-            <div
-              key={index}
-              className="mb-4 border border-gray-300 p-4 rounded-lg shadow-lg"
-            >
-              <img
-                src={img}
-                alt={`Uploaded ${index}`}
-                className="w-48 h-48 object-cover rounded-lg shadow-md"
-              />
-              <p className="mt-2 p-2 bg-gray-100 border border-gray-300 rounded">
-                <strong>Generated Description:</strong> {generatedDescriptions}
-              </p>
+            {uploadedImages.map((img, index) => (
+              <div
+                key={index}
+                className="mb-4 border border-gray-300 p-4 rounded-lg shadow-lg bg-white"
+              >
+                <img
+                  src={img}
+                  alt="Uploaded"
+                  className="w-48 h-48 object-cover rounded-lg shadow-md mx-auto"
+                />
+                <p className="mt-2 p-2 bg-gray-100 border border-gray-300 rounded">
+                  <strong>Generated Content:</strong> {marketingContent[index]}
+                </p>
+              </div>
+            ))}
+
+            <div className="mt-4 space-y-4">
+              {chatHistory.map((chat, index) => (
+                <div key={index} className="flex flex-col space-y-2">
+                  <div className="flex justify-end">
+                    <div className="bg-blue-500 text-white p-3 rounded-lg max-w-lg shadow-md">
+                      <strong>You:</strong> {chat.user}
+                    </div>
+                  </div>
+                  <div className="flex justify-start">
+                    <div className="bg-gray-200 text-black p-3 rounded-lg max-w-lg shadow-md">
+                      <strong>AI:</strong> {chat.ai}
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
-          ))
+          </>
         ) : (
-          <p className="text-gray-500 text-center">No images uploaded yet.</p>
+          <>
+            <ImageCustomization /> {/* Use ImageCustomization Here */}
+          </>
         )}
       </div>
-      <MessageInput />
+
+      {/* Message Input for Chat */}
+      <div className="w-full max-w-3xl">
+        <MessageInput activeTab={activeTab} />
+      </div>
     </div>
   );
 };

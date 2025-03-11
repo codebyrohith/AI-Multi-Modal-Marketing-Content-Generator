@@ -13,7 +13,7 @@ const PictureProcessing = () => {
     const file = event.target.files[0];
     if (file) {
       setImage(file);
-      setPreviewURL(URL.createObjectURL(file)); //Show preview immediately
+      setPreviewURL(URL.createObjectURL(file));
     }
   };
 
@@ -29,21 +29,21 @@ const PictureProcessing = () => {
 
     try {
       const response = await axios.post(
-        "http://127.0.0.1:5000/api/generate_description",
+        "http://127.0.0.1:5000/api/upload_image",
         formData,
         { headers: { "Content-Type": "multipart/form-data" } }
       );
 
-      console.log("Full API Response:", response.data);
+      console.log("Upload response:", response.data);
 
-      if (response.data && response.data.marketing_content) {
-        addNewImage(previewURL, response.data.marketing_content); //Update Context
-      } else {
-        alert(
-          `Error: No description returned. Full response: ${JSON.stringify(
-            response.data
-          )}`
+      if (response.data && response.data.user_id) {
+        addNewImage(
+          previewURL,
+          response.data.marketing_content,
+          response.data.user_id
         );
+      } else {
+        alert(`Error: No user_id returned.`);
       }
     } catch (error) {
       console.error("Upload failed:", error);
