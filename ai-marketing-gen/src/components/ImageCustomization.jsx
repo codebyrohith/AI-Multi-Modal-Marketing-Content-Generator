@@ -88,7 +88,7 @@ const ImageCustomization = () => {
         const base64Image = reader.result.split(",")[1]; // Remove metadata part
 
         const response = await axios.post(
-          "https://477a-34-126-105-133.ngrok-free.app/customize",
+          "https://by-visual-collective-empire.trycloudflare.com/customize",
           {
             image: base64Image,
             prompt: prompt,
@@ -103,7 +103,7 @@ const ImageCustomization = () => {
         console.log("Customization Response:", response.data);
 
         if (response.data.success) {
-          const customizedImage = `data:image/png;base64,${response.data.image}`;
+          const customizedImage = `data:image/png;base64,${response.data.modified_image}`;
           addCustomizedImage(customizedImage, prompt);
           setCustomizedImages([...customizedImages, customizedImage]);
         } else {
