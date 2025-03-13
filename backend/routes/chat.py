@@ -50,18 +50,18 @@ def chat():
 @chat_bp.route("/get_chat/<user_id>", methods=["GET"])
 def get_chat(user_id):
     """Retrieve chat history for a specific user."""
-    user_chat = chat_collection.find_one({"user_id": user_id}, {"_id": 0, "chat": 1})
+    user_chat = chat_collection.find_one({"user_id": user_id}, {"_id": 0, "chat": 1, "image_base64": 1})
 
     if not user_chat or "chat" not in user_chat:
         return jsonify({"error": "No chat history found for this user"}), 404
 
-    return jsonify({"user_id": user_id, "chat": user_chat["chat"]})
+    return jsonify({"user_id": user_id, "chat": user_chat["chat"], "image_base64": user_chat.get("image_base64")})
 
 
 @chat_bp.route("/get_all_chats", methods=["GET"])
 def get_all_chats():
     """Retrieve all user chat histories."""
-    all_chats = list(chat_collection.find({}, {"_id": 0, "user_id": 1, "chat": 1}))
+    all_chats = list(chat_collection.find({}, {"_id": 0, "user_id": 1, "chat": 1, "image_base64": 1}))
 
     if not all_chats:
         return jsonify({"error": "No chats found"}), 404

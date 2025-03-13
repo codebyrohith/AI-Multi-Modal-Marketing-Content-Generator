@@ -88,7 +88,7 @@ const ImageCustomization = () => {
         const base64Image = reader.result.split(",")[1]; // Remove metadata part
 
         const response = await axios.post(
-          "https://by-visual-collective-empire.trycloudflare.com/customize",
+          "https://quiet-individuals-public-switch.trycloudflare.com/customize",
           {
             image: base64Image,
             prompt: prompt,

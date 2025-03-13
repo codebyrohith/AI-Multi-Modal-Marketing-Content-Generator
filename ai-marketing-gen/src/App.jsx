@@ -7,7 +7,7 @@ function App() {
   return (
     <>
       <div className="flex h-screen bg-gray-100">
-        <SideBar />
+        {/* <SideBar /> */}
         <div className="flex-1">
           <ChatInterface />
         </div>
