@@ -67,7 +67,7 @@ This project is an AI-powered solution designed to automate e-commerce marketing
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-repo/ai-multimodal-marketing.git
+   git clone https://github.com/codebyrohith/AI-Multi-Modal-Marketing-Content-Generator.git
    cd ai-multimodal-marketing/backend
    ```
 2. Create and activate a virtual environment:
@@ -131,17 +131,6 @@ This project is an AI-powered solution designed to automate e-commerce marketing
   - **Response:** List of all chat histories.
 - **GET `/get_chat/<user_id>`**
   - **Response:** Detailed chat history for the specified `user_id`.
-
-## Individual Contributions
-
-- **Rohith Sai Charan Eanugula (30%):**  
-  Integration of AI models (Groq API and Stable Diffusion with ControlNet) and overall project coordination.
-- **Hrishikesh Komaragiri (30%):**  
-  Backend development including API design, image processing, and data management.
-- **Vinay Joshva (20%):**  
-  Full stack development, optimization of model fusion, and performance evaluation.
-- **Sunil Reddy Janapala (20%):**  
-  UI/UX design and frontend development ensuring a smooth, responsive user experience.
 
 ## Future Enhancements
 
