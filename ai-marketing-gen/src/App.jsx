@@ -6,7 +6,7 @@ import ChatInterface from "./components/ChatInterface";
 function App() {
   return (
     <>
-      <div className="flex h-screen bg-gray-100">
+      <div className="flex h-screen bg-gradient-to-r from-slate-100 via-slate-200 to-slate-100">
         {/* <SideBar /> */}
         <div className="flex-1">
           <ChatInterface />

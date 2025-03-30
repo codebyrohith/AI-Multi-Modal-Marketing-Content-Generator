@@ -1,18 +1,3 @@
-// import React from "react";
-
-// const SideBar = () => {
-//   return (
-//     <div className="w-64 bg-gray-800 text-white p-4 h-screen">
-//       <h2 className="text-2xl font-bold mb-4">Chat History</h2>
-//       <ul>
-//         <li className="mb-2">HOLA</li>
-//       </ul>
-//     </div>
-//   );
-// };
-
-// export default SideBar;
-
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
@@ -54,7 +39,7 @@ const Sidebar = ({ onSelectChat }) => {
   };
 
   return (
-    <div className="w-64 bg-gray-800 text-white p-4 h-screen overflow-auto">
+    <div className="w-64 bg-gray-900 text-white p-4 h-full overflow-y-auto shadow-md">
       <h2 className="text-2xl font-bold mb-4">Chat History</h2>
       {loading ? (
         <p>Loading...</p>
@@ -63,7 +48,7 @@ const Sidebar = ({ onSelectChat }) => {
           {chats.map((chatItem, index) => (
             <li
               key={index}
-              className="mb-2 cursor-pointer hover:bg-gray-700 p-2 rounded"
+              className="mb-2 cursor-pointer p-3 rounded-lg bg-gray-800 hover:bg-gray-700 transition duration-200 shadow-sm"
               onClick={() => handleChatClick(chatItem.user_id)}
             >
               {chatItem.chat && chatItem.chat.length > 0
