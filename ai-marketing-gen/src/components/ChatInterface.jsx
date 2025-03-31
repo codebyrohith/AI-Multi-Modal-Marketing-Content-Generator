@@ -72,6 +72,38 @@ const ChatInterface = () => {
                     ) : (
                       <p>No messages in this chat yet.</p>
                     )}
+                    {/* {selectedChat.chat && selectedChat.chat.length > 0 ? (
+                      selectedChat.chat.map((message, index) => {
+                        if (message.role === "user") {
+                          return (
+                            <div key={index} className="flex justify-end mb-2">
+                              <div className="bg-blue-500 text-white p-3 rounded-lg max-w-lg shadow-md">
+                                <strong>You:</strong> {message.content}
+                              </div>
+                            </div>
+                          );
+                        } else {
+                          return (
+                            <div
+                              key={index}
+                              className="flex justify-start mb-2"
+                            >
+                              <div className="bg-gray-200 text-black p-3 rounded-lg max-w-lg shadow-md">
+                                <strong>AI:</strong> {message.content}
+                              </div>
+                            </div>
+                          );
+                        }
+                      })
+                    ) : selectedChat.image_details ? (
+                      <div className="flex justify-start mb-2">
+                        <div className="bg-gray-200 text-black p-3 rounded-lg max-w-lg shadow-md">
+                          <strong>AI:</strong> {selectedChat.image_details}
+                        </div>
+                      </div>
+                    ) : (
+                      <p>No messages in this chat yet.</p>
+                    )} */}
                   </div>
                 </>
               ) : (

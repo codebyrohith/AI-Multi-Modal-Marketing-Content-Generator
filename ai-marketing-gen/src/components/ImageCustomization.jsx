@@ -35,7 +35,7 @@ const ImageCustomization = () => {
         const base64Image = reader.result.split(",")[1];
 
         const response = await axios.post(
-          "https://thoughts-str-varies-fm.trycloudflare.com/customize",
+          "https://bluetooth-cleaning-receipt-fraction.trycloudflare.com/customize",
           {
             image: base64Image,
             prompt: prompt,

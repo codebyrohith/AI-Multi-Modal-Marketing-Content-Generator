@@ -26,7 +26,7 @@ def upload_image():
     # Store session details in MongoDB
     chat_collection.update_one(
         {"user_id": user_id},
-        {"$set": {"user_id": user_id, "image_base64": base64_image, "image_details": content, "chat": []}},
+        {"$set": {"user_id": user_id, "image_base64": base64_image, "image_details": content, "chat": [{"role": "system", "content": content}]}},
         upsert=True
     )
 
