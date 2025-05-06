@@ -7,7 +7,7 @@ def get_marketing_content(base64_image, user_id):
     """Extract product details and marketing content from an image using Groq's LLaMA-3.2 Vision model."""
     
     completion = client.chat.completions.create(
-        model="llama-3.2-11b-vision-preview",
+        model="meta-llama/llama-4-scout-17b-16e-instruct",
         messages=[
             {"role": "user", "content": [
                 {"type": "text", "text": "Based on the details in the given image, generate product description and marketing content"},
@@ -45,7 +45,7 @@ def generate_response(user_id, user_prompt):
 
     # Generate AI response using previous conversation history
     completion = client.chat.completions.create(
-        model="llama-3.2-11b-vision-preview",
+        model="meta-llama/llama-4-scout-17b-16e-instruct",
         messages=[
             {"role": "system", "content": "You are an AI marketing assistant that generates compelling product descriptions and marketing content."},
             {"role": "user", "content": f"Image Details: {previous_content}"},

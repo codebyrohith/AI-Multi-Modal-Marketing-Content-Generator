@@ -3,7 +3,7 @@ import { useAppContext } from "../context/AppContext";
 import axios from "axios";
 
 const MessageInput = ({ activeTab, selectedChat, setSelectedChat }) => {
-  const { userId, addChatResponse, addCustomizedImage } = useAppContext();
+  const { userId, addChatResponse } = useAppContext();
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -13,31 +13,24 @@ const MessageInput = ({ activeTab, selectedChat, setSelectedChat }) => {
     setLoading(true);
 
     try {
-      // MARKETING TAB
       if (activeTab === "marketing") {
-        // If the user has selected an existing chat, continue that chat
         if (selectedChat) {
           const response = await axios.post("http://127.0.0.1:5000/api/chat", {
             user_id: selectedChat.user_id,
             prompt: message,
           });
 
-          console.log("Continue chat response:", response.data);
-
-          // Append the new user message and the AI's response to the existing chat array
           const updatedChat = [
             ...selectedChat.chat,
             { role: "user", content: message },
             { role: "assistant", content: response.data.response },
           ];
 
-          // Update the selectedChat with new messages
           setSelectedChat({
             ...selectedChat,
             chat: updatedChat,
           });
         } else {
-          // Original marketing flow (unchanged)
           if (!userId) {
             alert("Please upload an image first.");
             setLoading(false);
@@ -49,20 +42,68 @@ const MessageInput = ({ activeTab, selectedChat, setSelectedChat }) => {
             prompt: message,
           });
 
-          console.log("Chat Response:", response.data);
-          // Use your existing addChatResponse to store messages
           addChatResponse(message, response.data.response);
         }
       } else {
-        // IMAGE CUSTOMIZATION TAB (unchanged)
-        const response = await axios.post(
-          "http://c4fc-34-147-26-12.ngrok-free.app/customize",
-          { prompt: message }
+        // IMAGE CUSTOMIZATION TAB
+        const customizationId = selectedChat?.customization_id;
+        const latestImage = selectedChat?.chat?.length
+          ? selectedChat.chat[selectedChat.chat.length - 1].image_base64
+          : selectedChat.image_base64;
+
+        // 1️⃣ Generate new customization
+        const customizeResponse = await axios.post(
+          "https://bond-basket-growing-humor.trycloudflare.com/customize",
+          {
+            image: latestImage,
+            prompt: message,
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
         );
 
-        console.log("Customized Image Response:", response.data);
-        if (response.data.success) {
-          addCustomizedImage(response.data.image); // Base64 image
+        if (customizeResponse.data.success) {
+          const modifiedImageBase64 = customizeResponse.data.modified_image;
+
+          // 2️⃣ Save to backend, only send original_image_base64 if new chain
+          const savePayload = {
+            customization_id: customizationId,
+            image_base64: modifiedImageBase64,
+            prompt: message,
+          };
+
+          if (!customizationId) {
+            savePayload.original_image_base64 = latestImage;
+          }
+
+          console.log("saved payload :" + savePayload["customization_id"]);
+
+          const saveResponse = await axios.post(
+            "http://127.0.0.1:5000/api/save_customization",
+            savePayload
+          );
+
+          if (saveResponse.data.success) {
+            const updatedChat = [
+              ...selectedChat.chat,
+              {
+                role: "user",
+                content: message,
+                image_base64: modifiedImageBase64,
+              },
+            ];
+
+            setSelectedChat({
+              ...selectedChat,
+              chat: updatedChat,
+              customization_id: saveResponse.data.customization_id,
+            });
+          } else {
+            alert("Failed to save customization to the backend.");
+          }
         } else {
           alert("Failed to generate customized image.");
         }

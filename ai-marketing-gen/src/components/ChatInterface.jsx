@@ -4,14 +4,46 @@ import MessageInput from "./MessageInput";
 import PictureProcessing from "./PictureProcessing";
 import ImageCustomization from "./ImageCustomization";
 import Sidebar from "./SideBar";
+import axios from "axios";
 
 const ChatInterface = () => {
   const { uploadedImages, marketingContent, chatHistory } = useAppContext();
   const [activeTab, setActiveTab] = useState("marketing");
   const [selectedChat, setSelectedChat] = useState(null);
 
-  const handleSelectChat = (chatData) => {
-    setSelectedChat(chatData);
+  const handleSelectChat = async (item) => {
+    console.log(item);
+    if (activeTab === "customization") {
+      try {
+        const response = await axios.get(
+          `http://127.0.0.1:5000/api/get_customization_chain/${item.customization_id}`
+        );
+        if (response.data.success) {
+          setSelectedChat({
+            customization_id: response.data.chain.customization_id,
+            image_base64: response.data.chain.original_image_base64,
+            chat: response.data.chain.customizations.map((c) => ({
+              role: "user",
+              content: c.prompt,
+              image_base64: c.image_base64,
+            })),
+          });
+        }
+      } catch (error) {
+        console.error("Failed to fetch customization chain:", error);
+      }
+    } else {
+      try {
+        const response = await axios.get(
+          `http://127.0.0.1:5000/api/get_chat/${item.user_id}`
+        );
+        if (response.data) {
+          setSelectedChat(response.data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch marketing chat:", error);
+      }
+    }
   };
 
   const handleBack = () => {
@@ -20,10 +52,8 @@ const ChatInterface = () => {
 
   return (
     <div className="flex h-screen">
-      {/* Sidebar */}
-      <Sidebar onSelectChat={handleSelectChat} />
+      <Sidebar onSelectChat={handleSelectChat} activeTab={activeTab} />
 
-      {/* Main Content Area */}
       <div className="flex flex-col flex-1 items-center bg-[#343541] p-4">
         <div className="w-full max-w-3xl h-full flex flex-col bg-[#40414F] shadow-md rounded-xl border border-gray-700">
           <div className="flex-1 overflow-y-auto pr-1 h-0 grow">
@@ -41,74 +71,70 @@ const ChatInterface = () => {
                     <img
                       src={`data:image/jpeg;base64,${selectedChat.image_base64}`}
                       alt="Uploaded"
-                      className="w-48 h-48 object-cover rounded-lg shadow-md mx-auto"
+                      className="w-48 h-48 object-cover rounded-lg shadow-md mx-auto mb-4"
                     />
                   )}
 
                   <div className="mt-4 space-y-4">
                     {selectedChat.chat && selectedChat.chat.length > 0 ? (
-                      selectedChat.chat.map((message, index) => {
-                        if (message.role === "user") {
-                          return (
-                            <div key={index} className="flex justify-end mb-2">
-                              <div className="bg-blue-500 text-white p-3 rounded-lg max-w-lg shadow-md">
-                                <strong>You:</strong> {message.content}
+                      selectedChat.chat.map((message, index) => (
+                        <div key={index} className="w-full">
+                          {activeTab === "marketing" ? (
+                            // Marketing tab → stay as-is
+                            message.role === "user" ? (
+                              <div className="flex justify-end w-full mb-2">
+                                <div className="bg-blue-500 text-white p-3 rounded-lg max-w-lg shadow-md">
+                                  <strong>You:</strong> {message.content}
+                                </div>
                               </div>
-                            </div>
-                          );
-                        } else {
-                          return (
-                            <div
-                              key={index}
-                              className="flex justify-start mb-2"
-                            >
-                              <div className="bg-gray-200 text-black p-3 rounded-lg max-w-lg shadow-md">
-                                <strong>AI:</strong> {message.content}
+                            ) : (
+                              <div className="flex justify-start w-full mb-2">
+                                <div className="bg-gray-200 text-black p-3 rounded-lg max-w-lg shadow-md">
+                                  <strong>AI:</strong> {message.content}
+                                </div>
                               </div>
+                            )
+                          ) : (
+                            // Customization tab → chat-style stack
+                            <div className="flex flex-col w-full mb-4">
+                              {/* User (Prompt) bubble on right */}
+                              <div className="flex justify-end">
+                                <div className="bg-blue-500 text-white p-3 rounded-lg max-w-lg shadow-md">
+                                  <strong>You:</strong> {message.content}
+                                </div>
+                              </div>
+                              {/* AI (Image) bubble on left */}
+                              {message.image_base64 && (
+                                <div className="flex justify-start mb-2 w-full">
+                                  <div className="bg-gray-200 text-black p-2 rounded-lg shadow-md flex flex-col items-center w-56">
+                                    <img
+                                      src={`data:image/png;base64,${message.image_base64}`}
+                                      alt={`Customized ${index}`}
+                                      className="w-48 h-48 object-cover rounded-lg"
+                                    />
+                                    <a
+                                      href={`data:image/png;base64,${message.image_base64}`}
+                                      download={`customized_image_${
+                                        index + 1
+                                      }.png`}
+                                      className="mt-2 bg-green-500 text-white text-sm px-3 py-1 rounded hover:bg-green-600 transition text-center"
+                                    >
+                                      Download
+                                    </a>
+                                  </div>
+                                </div>
+                              )}
                             </div>
-                          );
-                        }
-                      })
+                          )}
+                        </div>
+                      ))
                     ) : (
                       <p>No messages in this chat yet.</p>
                     )}
-                    {/* {selectedChat.chat && selectedChat.chat.length > 0 ? (
-                      selectedChat.chat.map((message, index) => {
-                        if (message.role === "user") {
-                          return (
-                            <div key={index} className="flex justify-end mb-2">
-                              <div className="bg-blue-500 text-white p-3 rounded-lg max-w-lg shadow-md">
-                                <strong>You:</strong> {message.content}
-                              </div>
-                            </div>
-                          );
-                        } else {
-                          return (
-                            <div
-                              key={index}
-                              className="flex justify-start mb-2"
-                            >
-                              <div className="bg-gray-200 text-black p-3 rounded-lg max-w-lg shadow-md">
-                                <strong>AI:</strong> {message.content}
-                              </div>
-                            </div>
-                          );
-                        }
-                      })
-                    ) : selectedChat.image_details ? (
-                      <div className="flex justify-start mb-2">
-                        <div className="bg-gray-200 text-black p-3 rounded-lg max-w-lg shadow-md">
-                          <strong>AI:</strong> {selectedChat.image_details}
-                        </div>
-                      </div>
-                    ) : (
-                      <p>No messages in this chat yet.</p>
-                    )} */}
                   </div>
                 </>
               ) : (
                 <>
-                  {/* If no chat is selected, show the original tab UI */}
                   <div className="flex justify-center mb-4 pt-2">
                     <button
                       onClick={() => setActiveTab("marketing")}
@@ -181,13 +207,14 @@ const ChatInterface = () => {
             </div>
           </div>
 
-          {/* Pass selectedChat and setSelectedChat to MessageInput */}
           <div className="px-4 pt-2 pb-2">
-            <MessageInput
-              activeTab={activeTab}
-              selectedChat={selectedChat}
-              setSelectedChat={setSelectedChat}
-            />
+            {(activeTab === "marketing" || selectedChat) && ( // ✅ Only show input in marketing OR when a customization is opened
+              <MessageInput
+                activeTab={activeTab}
+                selectedChat={selectedChat}
+                setSelectedChat={setSelectedChat}
+              />
+            )}
           </div>
         </div>
       </div>

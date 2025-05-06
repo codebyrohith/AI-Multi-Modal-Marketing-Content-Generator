@@ -3,6 +3,8 @@ import base64
 from flask import Blueprint, request, jsonify
 from backend.utils.config import chat_collection
 from backend.services.chat_service import get_marketing_content, generate_response
+from backend.utils.config import customizations_collection
+from datetime import datetime
 
 chat_bp = Blueprint("chat", __name__)
 
@@ -68,3 +70,68 @@ def get_all_chats():
 
     return jsonify({"chats": all_chats})
 
+
+
+@chat_bp.route('/save_customization', methods=['POST'])
+def save_customization():
+    try:
+        data = request.json
+        customization_id = data.get("customization_id")
+        image_base64 = data.get("image_base64")
+        prompt = data.get("prompt")
+        original_image_base64 = data.get("original_image_base64", None)
+
+        if not image_base64 or not prompt:
+            return jsonify({"success": False, "error": "Missing image_base64 or prompt"}), 400
+
+        # First-time customization: create new document
+        if not customization_id:
+            customization_id = str(uuid.uuid4())
+            customizations_collection.insert_one({
+                "customization_id": customization_id,
+                "original_image_base64": original_image_base64,
+                "customizations": [{
+                    "prompt": prompt,
+                    "image_base64": image_base64,
+                    "created_at": datetime.utcnow()
+                }]
+            })
+        else:
+            # Add to existing customization chain
+            customizations_collection.update_one(
+                {"customization_id": customization_id},
+                {"$push": {"customizations": {
+                    "prompt": prompt,
+                    "image_base64": image_base64,
+                    "created_at": datetime.utcnow()
+                }}}
+            )
+
+        return jsonify({"success": True, "customization_id": customization_id})
+
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@chat_bp.route('/get_all_customizations', methods=['GET'])
+def get_all_customizations():
+    try:
+        records = list(customizations_collection.find({}, {"_id": 0}))
+        return jsonify({"success": True, "customizations": records})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@chat_bp.route('/get_customization_chain/<customization_id>', methods=['GET'])
+def get_customization_chain(customization_id):
+    try:
+        record = customizations_collection.find_one(
+            {"customization_id": customization_id},
+            {"_id": 0}
+        )
+        if not record:
+            return jsonify({"success": False, "error": "Not found"}), 404
+
+        return jsonify({"success": True, "chain": record})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
