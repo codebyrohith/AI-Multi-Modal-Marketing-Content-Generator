@@ -75,11 +75,6 @@ npm start
 - Enable multi-language content generation
 - Integrate A/B testing and performance analytics
 
-## 🤝 Contributors
-
-- **Your Name**  
-  Lead Developer and Architect
-
 ## 📄 License
 
 This project is licensed under the MIT License.
